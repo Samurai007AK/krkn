@@ -42,6 +42,7 @@ class TestHogsScenarioPlugin(unittest.TestCase):
         return config
 
     def test_run_scenario_drains_all_exceptions(self):
+        """Multiple worker failures are aggregated into one exception."""
         q = queue.Queue()
         q.put(Exception("node-a failed"))
         q.put(Exception("node-b failed"))
@@ -54,6 +55,7 @@ class TestHogsScenarioPlugin(unittest.TestCase):
         self.assertTrue(q.empty())
 
     def test_run_scenario_single_exception(self):
+        """A single worker failure propagates in the combined exception."""
         q = queue.Queue()
         q.put(Exception("only failure"))
         with self.assertRaises(Exception) as ctx:
@@ -61,6 +63,7 @@ class TestHogsScenarioPlugin(unittest.TestCase):
         self.assertIn("only failure", str(ctx.exception))
 
     def test_run_scenario_no_exception(self):
+        """Empty exception queue means run_scenario does not raise."""
         q = queue.Queue()
         # should not raise when queue is empty
         self.plugin.run_scenario(self._stub_config(), MagicMock(), [], q)
